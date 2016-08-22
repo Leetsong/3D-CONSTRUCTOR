@@ -31,16 +31,12 @@ KinectReceiver::~KinectReceiver() {
 
 bool KinectReceiver::initialize() {
 	if (FAILED(InitDefaultSensor())) {
-#ifdef TEST_
-		std::cout << "." << std::endl;
-#endif
+		PRINT_INFO("initialized: ERROR.\n");
 
 		return false;
 	}
 
-#ifdef TEST_
-	std::cout << "Kinect Receiver: initialized." << std::endl;
-#endif
+	PRINT_INFO("initialized.\n");
 
 	return true;
 }
@@ -62,9 +58,7 @@ void KinectReceiver::update() {
 		if (SUCCEEDED(hr)) {
 			hr = pDepthFrameReference->AcquireFrame(&pDepthFrame);
 
-#ifdef TEST_
-			std::cout << "Kinect Receiver: update: got depth frame" << std::endl;
-#endif
+			PRINT_INFO("got depth frame\n");
 		}
 
 		SafeRelease(pDepthFrameReference);
@@ -78,9 +72,7 @@ void KinectReceiver::update() {
 		if (SUCCEEDED(hr)) {
 			hr = pColorFrameReference->AcquireFrame(&pColorFrame);
 
-#ifdef TEST_
-			std::cout << "Kinect Receiver: update: got color frame" << std::endl;
-#endif
+			PRINT_INFO("got color frame\n");
 		}
 
 		SafeRelease(pColorFrameReference);
@@ -289,7 +281,7 @@ HRESULT KinectReceiver::ProcessFrame(
 		m_pCloudSet->push_back(pCurCloud);
 		emit postUpdateEvent();
 
-		PRINT_INFO("GET ONE\n");
+		PRINT_INFO("GET ONE FRAME\n");
 	}
 
 	return S_OK;

@@ -38,15 +38,6 @@ inline void Controller::runLater() {
 }
 
 void Controller::run() {
-	//m_kinect->setAnimate(true);
-	//while(1) {
-	//	bool animate = m_animate;
-	//	if(animate == false) break;
-	//	if(m_pointer < m_size) {
-	//		m_opengl->setAnimate(true, (*m_cloudSet)[m_pointer]);
-	//	}
-	//}
-
 	PRINT_INFO("pointer: %zu, size: %zu\n", m_pointer, m_size);
 
 	size_t pointer = m_pointer, size = m_size;
@@ -79,5 +70,5 @@ void Controller::kinectUpdatedOnce() {
 void Controller::openglUpdatedOnce() {
 	m_pointer ++;
 
-	PRINT_INFO("updated size: to %zu\n", m_pointer);
+	PRINT_INFO("updated pointer: to %zu\n", m_pointer);
 }

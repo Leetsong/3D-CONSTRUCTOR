@@ -15,9 +15,7 @@ OpenGLViewer::OpenGLViewer(QWidget* parent) :
     m_shaderAttrColor(0),
     m_shaderAttrPosition(0),
     m_shaderUnifromTransform(0) {
-#ifdef TEST_
-    std::cout << "OpenGLWidget Create" << std::endl;
-#endif
+
 }
 
 OpenGLViewer::~OpenGLViewer() {
@@ -101,13 +99,6 @@ inline void OpenGLViewer::initializeShader() {
 
         vertexShaderSourceCode = vertexSStream.str();
         fragmentShaderSourceCode = fragmentSStream.str();
-
-#ifdef TEST_
-		std::cout << "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" << std::endl; 
-		std::cout << vertexShaderSourceCode.c_str() << std::endl;;
-		std::cout << "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
-#endif
-
     } catch(std::ifstream::failure e) {
         std::cout << "FAILURE: VERTEX SHADER FILE OR FRAGMENT SHADER FILE DOES NOT EXIST." << std::endl;
         exit(-1);

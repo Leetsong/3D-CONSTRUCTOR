@@ -75,9 +75,7 @@ void Wrapper::loadCloud() {
 }
 
 void Wrapper::startButtonPressed() {
-#ifdef TEST_
-	std::cout << "Start button pressed" << std::endl;
-#endif
+	PRINT_INFO("start button pressed\n");
 
 	m_controller->setAnimate(true);
 }
