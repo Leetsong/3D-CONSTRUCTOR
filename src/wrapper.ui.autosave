@@ -72,6 +72,9 @@
       <height>300</height>
      </rect>
     </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="registerNowButton">
     <property name="geometry">

@@ -8,43 +8,47 @@ Wrapper::Wrapper(QWidget* parent) :
     m_ui(new Ui::Wrapper),
     m_kinectReceiver(new KinectReceiver(&m_cloudSet)),
 	m_pclRegister(new PCLRegister()) {
+
     m_ui->setupUi(this);
 	this->setWindowTitle("3D-CONSTRUCTOR");
-
-	PRINT_INFO("UI successfully setup\n");
+	consoleAppend("============3D-CONSTRUCTOR SETUP STARTS============");
+	consoleAppend("UI successfully setup");
 
 	// set controller
 	m_controller->setCloudSet(&m_cloudSet);
 	m_controller->setOpenGLViewer(m_ui->openGLViewer);
 	m_controller->setKinectReceiver(m_kinectReceiver);
-
-	PRINT_INFO("controller successfully setup\n");
+	consoleAppend("controller successfully setup");
 
     // set openglviewer cloud
     m_ui->openGLViewer->setCloud(nullptr);
 	m_pclRegister->setCloudSet(&m_cloudSet);
-
-	PRINT_INFO("cloud set for opengl and pcl successfully setup\n");
+	consoleAppend("cloud set for opengl and pcl successfully setup");
 
 	// set qvtkwindow(pclviewer)
 	m_ui->pclViewer->SetRenderWindow(m_pclRegister->getRenderWindow());
 	m_pclRegister->setupInteractor(m_ui->pclViewer->GetInteractor(), m_ui->pclViewer->GetRenderWindow());
 	m_ui->pclViewer->update();
-
-	PRINT_INFO("qvtkwindow successfully setup\n");
+	consoleAppend("qvtkwindow successfully setup");
 
 	// Connect
+	connect(m_ui->loadButton, SIGNAL(clicked()), this, SLOT(loadButtonPressed()));
     connect(m_ui->startButton, SIGNAL(clicked()), this, SLOT(startButtonPressed()));
 	connect(m_ui->stopButton, SIGNAL(clicked()), this, SLOT(stopButtonPressed()));
 	connect(m_ui->resetButton, SIGNAL(clicked()), this, SLOT(resetButtonPressed()));
-	connect(m_ui->registerNowButton, SIGNAL(clicked()), m_pclRegister, SLOT(registerNow()));
+	connect(m_ui->registerNowButton, SIGNAL(clicked()), m_pclRegister, SLOT(runRegistration()));
 	connect(m_ui->maximumIterationsSpinBox, SIGNAL(valueChanged(int)), m_pclRegister, SLOT(setMaximumIterations(int)));
-	connect(m_ui->maxCorrespondenceDistanceDoubleSpinBox, SIGNAL(valueChanged(int)), m_pclRegister, SLOT(setMaxCorrespondenceDistance(int)));
-	connect(m_ui->transformationEpsilonDoubleSpinBox, SIGNAL(valueChanged(int)), m_pclRegister, SLOT(setTransformationEpsilon(int)));
+	connect(m_ui->maxCorrespondenceDistanceDoubleSpinBox, SIGNAL(valueChanged(const QString&)), m_pclRegister, SLOT(setMaxCorrespondenceDistance(const QString&)));
+	connect(m_ui->transformationEpsilonDoubleSpinBox, SIGNAL(valueChanged(const QString&)), m_pclRegister, SLOT(setTransformationEpsilon(const QString&)));
 	connect(m_kinectReceiver, SIGNAL(postUpdateEvent()), m_controller, SLOT(kinectUpdatedOnce()));
 	connect(m_ui->openGLViewer, SIGNAL(postUpdateEvent()), m_controller, SLOT(openglUpdatedOnce()));
+	consoleAppend("connections successfully setup");
 
-	PRINT_INFO("connections successfully setup\n");
+	m_ui->maximumIterationsSpinBox->setValue(60);
+	m_ui->transformationEpsilonDoubleSpinBox->setValue(1e-6);
+	m_ui->maxCorrespondenceDistanceDoubleSpinBox->setValue(0.1);
+
+	consoleAppend("============3D-CONSTRUCTOR SETUP DONE============\n");
 }
 
 Wrapper::~Wrapper() {
@@ -59,44 +63,68 @@ Wrapper::~Wrapper() {
 	}
 }
 
-void Wrapper::loadCloud() {
-    std::vector<float> data;
+void Wrapper::loadCloud(const QStringList& filenames) {
+	std::string ex_pcd = ".pcd", ex_ply = ".ply";
+	for (size_t i = 0; i < filenames.size(); i++) {
+		std::string filename(filenames.at(i).toLocal8Bit().constData());
+		PointCloud<PointXYZRGB>::Ptr cloud(new PointCloud<PointXYZRGB>());
 
-    std::ifstream fStream;
-    fStream.open("../../src/test.data", std::ifstream::in);
+		if (filename.substr(filename.find('.')) == ex_pcd) {
+			if (io::loadPCDFile(filename, *cloud) < 0) {
+				PCL_ERROR("Error loading file[%d]: %s\n", i, filename.c_str());
+				return;
+			}
+			addToCloudSet(cloud);
+			PCL_INFO("Loading over file[%d]: %s....\n", i, filename.c_str());
+			std::cout << "    Height: " << cloud->height << " Width: " << cloud->width << " Dense: " << cloud->is_dense << std::endl;
+		} else if (filename.substr(filename.find('.')) == ex_ply) {
+			if (io::loadPLYFile(filename, *cloud) < 0) {
+				PCL_ERROR("Error loading file[%d]: %s\n", i, filename.c_str());
+				return;
+			}
+			addToCloudSet(cloud);
+			PCL_INFO("Loading over file[%d]: %s....\n", i, filename.c_str());
+			std::cout << "    Height: " << cloud->height << " Width: " << cloud->width << " Dense: " << cloud->is_dense << std::endl;
+		} else {
+			PCL_ERROR("Error file[%d] %s is not valid\n", i, filename.c_str());
+			return;
+		}
+	}
+}
 
-    while(!fStream.eof()) {
-        float d;
-        fStream >> d;
-        data.push_back(d);
-    }
+void Wrapper::addToCloudSet(PointCloud<PointXYZRGB>::Ptr pointcloud) {
+	Cloud* cloud = new Cloud();
+	cloud->size = pointcloud->points.size();
+	cloud->points = new CloudPoint[cloud->size];
 
-    if(data.empty() == true) {
-        std::cout << "Error loading" << std::endl;
-        exit(-1);
-    } else {
-        std::cout << "Points: " << data.size() / 3 << std::endl;
-    }
+	for (size_t j = 0; j < cloud->size; j++) {
+		cloud->points[j].position.x = pointcloud->points[j].x;
+		cloud->points[j].position.y = pointcloud->points[j].y;
+		cloud->points[j].position.z = pointcloud->points[j].z;
+		cloud->points[j].color.r = pointcloud->points[j].r;
+		cloud->points[j].color.g = pointcloud->points[j].g;
+		cloud->points[j].color.b = pointcloud->points[j].b;
+	}
 
-    Cloud* cloud = new Cloud;
-    cloud->size = data.size() / 3;
-    cloud->points = new CloudPoint[cloud->size];
+	m_cloudSet.push_back(cloud);
 
-    size_t i = 0;
-    for(size_t j = 0; j < cloud->size; j ++) {
-        cloud->points[j].position.x = data[i];
-        cloud->points[j].position.y = data[i+1];
-        cloud->points[j].position.z = data[i+2];
-        cloud->points[j].color.r = 255;
-        cloud->points[j].color.g = 255;
-        cloud->points[j].color.b = 255;
-        cloud->points[j].color.a = 1;
-        i += 3;
-    }
+	PCL_INFO("Copying over file: cloud size: %lu\n", cloud->size);
+}
 
-    m_cloudSet.push_back(cloud);
+inline void Wrapper::consoleAppend(const std::string& info) {
+	m_ui->consoleTextBrowser->append(QString(info.c_str()));
+	m_ui->consoleTextBrowser->moveCursor(QTextCursor::End);
+}
 
-    m_ui->openGLViewer->setCloud(m_cloudSet.back());
+void Wrapper::loadButtonPressed() {
+	QStringList filenames = QFileDialog::getOpenFileNames(this,
+		"Select one or more files to open",
+		"/home",
+		"pointclouds(*.pcd *.ply)"
+	);
+	consoleAppend(CONSOLE_START("Load files"));
+	loadCloud(filenames);
+	consoleAppend(CONSOLE_END("Load files"));
 }
 
 void Wrapper::startButtonPressed() {

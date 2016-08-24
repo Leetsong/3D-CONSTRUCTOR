@@ -3,6 +3,8 @@
 
 // Qt
 #include <QMainWindow>
+#include <QFileDialog>
+#include <QStringList>
 
 // controller
 #include "controller.h"
@@ -15,6 +17,15 @@
 
 // pclregister
 #include "pclregister.h"
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
+
+#define CONSOLE_START(x) \
+	">>>>> " + std::string(x) + " START"
+#define CONSOLE_END(x) \
+	"<<<<< " + std::string(x) + " DONE"
 
 namespace Ui {
 	class Wrapper;
@@ -28,9 +39,14 @@ public:
     explicit Wrapper(QWidget* parent = nullptr);
 	~Wrapper();
     // We will delete it when kinect is added in
-    void loadCloud();
+
+private:
+	inline void consoleAppend(const std::string& info);
+	void loadCloud(const QStringList& filenames);
+	void addToCloudSet(PointCloud<PointXYZRGB>::Ptr cloud);
 
 public slots:
+	void loadButtonPressed();
     void startButtonPressed();
 	void stopButtonPressed();
 	void resetButtonPressed();

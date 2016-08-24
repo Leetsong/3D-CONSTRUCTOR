@@ -21,7 +21,7 @@ void PCLRegister::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_cloudSet = cloudSet;
 }
 
-void PCLRegister::run() {
+void PCLRegister::runRegistration() {
 	initialize();
 
 	int ptrToProcessingCloud = 0;
@@ -42,6 +42,14 @@ vtkRenderWindow* PCLRegister::PCLRegister::getRenderWindow() {
 
 void PCLRegister::setupInteractor(vtkRenderWindowInteractor *iren, vtkRenderWindow *win) {
 	m_viewer->setupInteractor(iren, win);
+}
+
+void PCLRegister::setTransformationEpsilon(const QString & text) {
+	setTransformationEpsilon(text.toDouble());
+}
+
+void PCLRegister::setMaxCorrespondenceDistance(const QString & text) {
+	setMaxCorrespondenceDistance(text.toDouble());
 }
 
 void PCLRegister::setTransformationEpsilon(double transformationEpsilon) {
@@ -127,7 +135,7 @@ void PCLRegister::initialize() {
 
 }
 
-void PCLRegister::registerNow() {
+void PCLRegister::registe() {
 	m_reCloud.clear();
 
 	// Align this to last, and save it in resultant
@@ -162,7 +170,7 @@ void PCLRegister::update(int ptrToProcessingCloud) {
 	// filtering
 	filter();
 	// Registration
-	registerNow();
+	registe();
 	// Visualization
 	visualize();
 	// Fusion

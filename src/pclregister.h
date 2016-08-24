@@ -25,6 +25,9 @@ class PCLRegister : public QObject {
 	Q_OBJECT
 
 public slots:
+	void runRegistration();
+	void setTransformationEpsilon(const QString &text);
+	void setMaxCorrespondenceDistance(const QString &text);
 	void setTransformationEpsilon(double transformationEpsilon = 1e-6);
 	void setMaxCorrespondenceDistance(double maxCorrespondenceDistance = 0.1);
 	void setMaximumIterations(int maximumIterations = 60);
@@ -32,7 +35,6 @@ public slots:
 public:
 	PCLRegister(double transformationEpsilon = 1e-6, double maxCorrespondenceDistance = 0.1, int maximumIterations = 60);
 	~PCLRegister();
-	void run();
 	vtkRenderWindow* getRenderWindow();
 	void setCloudSet(std::vector<Cloud*>* cloudSet);
 	void setupInteractor(vtkRenderWindowInteractor *iren, vtkRenderWindow *win);
@@ -48,7 +50,7 @@ private:
 	void removeNaN();
 	void downSample(PointCloud<PointXYZRGB>& cloud);
 	// Registration
-	void registerNow();
+	void registe();
 	// Fusion
 	void fuse();
 	// Visualization
