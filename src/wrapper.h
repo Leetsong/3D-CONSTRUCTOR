@@ -41,7 +41,8 @@ public:
     // We will delete it when kinect is added in
 
 private:
-	inline void consoleAppend(const std::string& info);
+	inline void consoleAppendInfo(const std::string& info);
+	inline void consoleAppendError(const std::string& error);
 	void loadCloud(const QStringList& filenames);
 	void addToCloudSet(PointCloud<PointXYZRGB>::Ptr cloud);
 

@@ -33,6 +33,10 @@ void Controller::setOpenGLViewer(OpenGLViewer * opengl) {
 	m_opengl = opengl;
 }
 
+void Controller::setPCLViewer(QVTKWidget * pcl) {
+	m_pcl = pcl;
+}
+
 inline void Controller::runLater() {
 	QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
 }
@@ -70,4 +74,8 @@ void Controller::openglUpdatedOnce() {
 	m_pointer ++;
 
 	PRINT_INFO("updated pointer: to %zu\n", m_pointer);
+}
+
+void Controller::pclUpdatedOnce() {
+	m_pcl->update();
 }

@@ -11,25 +11,26 @@ Wrapper::Wrapper(QWidget* parent) :
 
     m_ui->setupUi(this);
 	this->setWindowTitle("3D-CONSTRUCTOR");
-	consoleAppend("============3D-CONSTRUCTOR SETUP STARTS============");
-	consoleAppend("UI successfully setup");
-
-	// set controller
-	m_controller->setCloudSet(&m_cloudSet);
-	m_controller->setOpenGLViewer(m_ui->openGLViewer);
-	m_controller->setKinectReceiver(m_kinectReceiver);
-	consoleAppend("controller successfully setup");
+	consoleAppendInfo("============3D-CONSTRUCTOR SETUP STARTS============");
+	consoleAppendInfo("UI successfully setup");
 
     // set openglviewer cloud
     m_ui->openGLViewer->setCloud(nullptr);
 	m_pclRegister->setCloudSet(&m_cloudSet);
-	consoleAppend("cloud set for opengl and pcl successfully setup");
+	consoleAppendInfo("cloud set for opengl and pcl successfully setup");
 
 	// set qvtkwindow(pclviewer)
 	m_ui->pclViewer->SetRenderWindow(m_pclRegister->getRenderWindow());
 	m_pclRegister->setupInteractor(m_ui->pclViewer->GetInteractor(), m_ui->pclViewer->GetRenderWindow());
 	m_ui->pclViewer->update();
-	consoleAppend("qvtkwindow successfully setup");
+	consoleAppendInfo("qvtkwindow successfully setup");
+
+	// set controller
+	m_controller->setCloudSet(&m_cloudSet);
+	m_controller->setOpenGLViewer(m_ui->openGLViewer);
+	m_controller->setKinectReceiver(m_kinectReceiver);
+	m_controller->setPCLViewer(m_ui->pclViewer);
+	consoleAppendInfo("controller successfully setup");
 
 	// Connect
 	connect(m_ui->loadButton, SIGNAL(clicked()), this, SLOT(loadButtonPressed()));
@@ -42,13 +43,14 @@ Wrapper::Wrapper(QWidget* parent) :
 	connect(m_ui->transformationEpsilonDoubleSpinBox, SIGNAL(valueChanged(const QString&)), m_pclRegister, SLOT(setTransformationEpsilon(const QString&)));
 	connect(m_kinectReceiver, SIGNAL(postUpdateEvent()), m_controller, SLOT(kinectUpdatedOnce()));
 	connect(m_ui->openGLViewer, SIGNAL(postUpdateEvent()), m_controller, SLOT(openglUpdatedOnce()));
-	consoleAppend("connections successfully setup");
+	connect(m_pclRegister, SIGNAL(postUpdateEvent()), m_controller, SLOT(pclUpdatedOnce()));
+	consoleAppendInfo("connections successfully setup");
 
 	m_ui->maximumIterationsSpinBox->setValue(60);
 	m_ui->transformationEpsilonDoubleSpinBox->setValue(1e-6);
 	m_ui->maxCorrespondenceDistanceDoubleSpinBox->setValue(0.1);
 
-	consoleAppend("============3D-CONSTRUCTOR SETUP DONE============\n");
+	consoleAppendInfo("============3D-CONSTRUCTOR SETUP DONE============\n");
 }
 
 Wrapper::~Wrapper() {
@@ -111,10 +113,23 @@ void Wrapper::addToCloudSet(PointCloud<PointXYZRGB>::Ptr pointcloud) {
 	PCL_INFO("Copying over file: cloud size: %lu\n", cloud->size);
 }
 
-inline void Wrapper::consoleAppend(const std::string& info) {
-	m_ui->consoleTextBrowser->append(QString(info.c_str()));
-	m_ui->consoleTextBrowser->moveCursor(QTextCursor::End);
+inline void Wrapper::consoleAppendInfo(const std::string& info) {
+	m_ui->outputTextBrowser->append(QString(info.c_str()));
+	m_ui->outputTextBrowser->moveCursor(QTextCursor::End);
 }
+
+inline void Wrapper::consoleAppendError(const std::string& error) {
+	//QPalette palette = m_ui->consoleTextBrowser->palette();
+	//QColor originWindowTextColor = palette.color(QPalette::Text);
+	//QColor newWindowTextColor(255, 0, 0);
+	//palette.setColor(QPalette::Text, newWindowTextColor);
+	//m_ui->consoleTextBrowser->setPalette(palette);
+	m_ui->errorTextBrowser->append(QString(error.c_str()));
+	m_ui->errorTextBrowser->moveCursor(QTextCursor::End);
+	// palette.setColor(QPalette::Text, originWindowTextColor);
+	// m_ui->consoleTextBrowser->setPalette(palette);
+}
+
 
 void Wrapper::loadButtonPressed() {
 	QStringList filenames = QFileDialog::getOpenFileNames(this,
@@ -122,9 +137,9 @@ void Wrapper::loadButtonPressed() {
 		"/home",
 		"pointclouds(*.pcd *.ply)"
 	);
-	consoleAppend(CONSOLE_START("Load files"));
+	consoleAppendInfo(CONSOLE_START("Load files"));
 	loadCloud(filenames);
-	consoleAppend(CONSOLE_END("Load files"));
+	consoleAppendInfo(CONSOLE_END("Load files"));
 }
 
 void Wrapper::startButtonPressed() {

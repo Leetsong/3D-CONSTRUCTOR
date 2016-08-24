@@ -24,6 +24,9 @@ class PCLRegister : public QObject {
 
 	Q_OBJECT
 
+signals:
+	void postUpdateEvent();
+
 public slots:
 	void runRegistration();
 	void setTransformationEpsilon(const QString &text);

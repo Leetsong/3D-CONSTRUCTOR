@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QCoreApplication>
+#include <QVTKWidget.h>
 
 class Controller : public QObject {
 	
@@ -15,6 +16,7 @@ Q_OBJECT
 public slots:
 	void openglUpdatedOnce();
 	void kinectUpdatedOnce();
+	void pclUpdatedOnce();
 
 public:
 	Controller();
@@ -23,6 +25,7 @@ public:
 	void setCloudSet(std::vector<Cloud*>* cloudSet);
 	void setKinectReceiver(KinectReceiver* kinect);
 	void setOpenGLViewer(OpenGLViewer* opengl);
+	void setPCLViewer(QVTKWidget* pcl);
 
 protected:
 	bool event(QEvent* event) Q_DECL_OVERRIDE;
@@ -39,6 +42,7 @@ private:
 	std::vector<Cloud*>* m_cloudSet;
 	KinectReceiver* m_kinect;
 	OpenGLViewer* m_opengl;
+	QVTKWidget* m_pcl;
 
 };
 

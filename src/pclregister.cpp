@@ -190,5 +190,5 @@ void PCLRegister::visualize() {
 		m_viewer->addPointCloud(boost::make_shared<const PointCloud<PointXYZRGB>>(m_reCloud), reCloudColorHandler, "RESULT");
 	}
 
-	m_viewer->spin();
+	emit postUpdateEvent();
 }
