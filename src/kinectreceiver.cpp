@@ -7,7 +7,7 @@ KinectReceiver::KinectReceiver(std::vector<Cloud*> *cloudSet) :
 	m_nCurRelativeTime(-1),
 	m_pKinectSensor(nullptr),
 	m_pMultiSourceFrameReader(nullptr),
-	m_pColorRGBX(nullptr) {
+	m_pCoordinateMapper(nullptr) {
 	// Create storage for color pixel data in RGBX format
 	m_pColorRGBX = new RGBQUAD[COLOR_WIDTH * COLOR_HEIGHT];
 	// Create storage for the coordinate mapping from depth to camera space

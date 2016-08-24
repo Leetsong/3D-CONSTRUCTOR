@@ -4,14 +4,6 @@
 // Qt
 #include <QMainWindow>
 
-// Point Cloud Library
-// #include <pcl/point_cloud.h>
-// #include <pcl/point_types.h>
-// #include <pcl/visualization/pcl_visualizer.h>
-
-// Visualization Toolkit (VTK)
-// #include <vtkRenderWindow.h>
-
 // controller
 #include "controller.h"
 
@@ -21,8 +13,8 @@
 // kinectreceiver
 #include "kinectreceiver.h"
 
-// typedef pcl::PointXYZRGBA PointType;
-// typedef pcl::PointCloud<PointType> PointCloud;
+// pclregister
+#include "pclregister.h"
 
 namespace Ui {
 	class Wrapper;
@@ -40,13 +32,17 @@ public:
 
 public slots:
     void startButtonPressed();
+	void stopButtonPressed();
+	void resetButtonPressed();
 
 private:
+	bool m_start;
 	Controller* m_controller;
 
 	Ui::Wrapper* m_ui;
 	std::vector<Cloud*> m_cloudSet;
     KinectReceiver* m_kinectReceiver;
+	PCLRegister* m_pclRegister;
 
 };
 

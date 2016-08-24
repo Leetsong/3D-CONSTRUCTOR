@@ -48,7 +48,6 @@ void Controller::run() {
 	if(m_animate == true) {
 		runLater();
 	}
-
 }
 
 bool Controller::event(QEvent* event) {
