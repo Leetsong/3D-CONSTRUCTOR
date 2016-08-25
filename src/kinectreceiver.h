@@ -7,17 +7,23 @@
 #include <QCoreApplication>
 #include <kinect.h>
 
+#define KRHEADER(x) \
+	 "[KINECT RECEIVER]: " + std::string(x)
+
 class KinectReceiver : public QObject {
 
 Q_OBJECT
 
 signals:
+	void postInfo(const std::string& info);
+	void postError(const std::string& error);
 	void postUpdateEvent();
 
 public:
-    KinectReceiver(std::vector<Cloud*>* cloudSet = nullptr);
+    KinectReceiver();
     ~KinectReceiver();
-    void setAnimate(bool animate);
+    int setAnimate(bool animate);
+	void setCloudSet(std::vector<Cloud*>* cloudSet = nullptr);
 
 protected:
 	bool event(QEvent * event) Q_DECL_OVERRIDE;

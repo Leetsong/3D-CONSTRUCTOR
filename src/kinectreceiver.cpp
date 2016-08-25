@@ -1,7 +1,7 @@
 #include "kinectreceiver.h"
 
-KinectReceiver::KinectReceiver(std::vector<Cloud*> *cloudSet) :
-	m_pCloudSet(cloudSet),
+KinectReceiver::KinectReceiver() :
+	m_pCloudSet(nullptr),
 	m_animate(false),
 	m_updatePending(false),
 	m_nCurRelativeTime(-1),
@@ -307,16 +307,26 @@ void KinectReceiver::updateNow() {
 	}
 }
 
-void KinectReceiver::setAnimate(bool animate) {
+void KinectReceiver::setCloudSet(std::vector<Cloud*>* cloudSet) {
+	m_pCloudSet = cloudSet;
+}
+
+int KinectReceiver::setAnimate(bool animate) {
 	static bool needInitialize = true;
 	m_animate = animate;
 	if(m_animate) {
+		if(m_pCloudSet == nullptr) {
+			emit postError(KRHEADER("No memory to contain point cloud\n"));
+			m_animate == false;
+			return -1;
+		}
 		if (needInitialize == true) {
 			initialize();
 			needInitialize = false;
 		}
 		updateLater();
 	}
+	return 0;
 }
 
 HRESULT KinectReceiver::InitDefaultSensor() {

@@ -20,15 +20,19 @@
 
 using namespace pcl;
 
+#define PRHEADER(x) \
+	"[PCL REGISTER]: " + std::string(x)
+
 class PCLRegister : public QObject {
 
 	Q_OBJECT
 
 signals:
+	void postInfo(const std::string& info);
+	void postError(const std::string& error);
 	void postUpdateEvent();
 
 public slots:
-	void runRegistration();
 	void setTransformationEpsilon(const QString &text);
 	void setMaxCorrespondenceDistance(const QString &text);
 	void setTransformationEpsilon(double transformationEpsilon = 1e-6);
@@ -39,6 +43,7 @@ public:
 	PCLRegister(double transformationEpsilon = 1e-6, double maxCorrespondenceDistance = 0.1, int maximumIterations = 60);
 	~PCLRegister();
 	vtkRenderWindow* getRenderWindow();
+	int runRegistration();
 	void setCloudSet(std::vector<Cloud*>* cloudSet);
 	void setupInteractor(vtkRenderWindowInteractor *iren, vtkRenderWindow *win);
 
@@ -61,6 +66,7 @@ private:
 
 private:
 	std::vector<Cloud*>* m_cloudSet;
+	int m_ptrToProcessingCloud;
 	bool m_isFirst;
 	PointCloud<PointXYZRGB> m_globalCloud;
 	PointCloud<PointXYZRGB> m_reCloud;

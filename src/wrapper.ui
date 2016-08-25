@@ -141,7 +141,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="registerNowButton">
+   <widget class="QPushButton" name="registeButton">
     <property name="geometry">
      <rect>
       <x>420</x>
@@ -151,7 +151,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>register now</string>
+     <string>registe</string>
     </property>
    </widget>
    <widget class="QPushButton" name="stopButton">

@@ -11,17 +11,16 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLFunctions>
 
-//QT_BEGIN_NAMESPACE
-//class QPainter;
-//class QOpenGLContext;
-//class QOpenGLPaintDevice;
-//QT_END_NAMESPACE
+#define OVHEADER(x) \
+	"[OPENGL VIEWER]: " + std::string(x)
 
 class OpenGLViewer : public QOpenGLWidget, public QOpenGLFunctions {
 
 Q_OBJECT
 
 signals:
+	void postInfo(const std::string& info);
+	void postError(const std::string& error);
 	void postUpdateEvent();
 
 public:

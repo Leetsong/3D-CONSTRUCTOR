@@ -23,9 +23,14 @@
 #include <pcl/io/ply_io.h>
 
 #define CONSOLE_START(x) \
-	">>>>> " + std::string(x) + " START"
-#define CONSOLE_END(x) \
-	"<<<<< " + std::string(x) + " DONE"
+	">>>>> " + std::string(x) + " STARTED"
+#define CONSOLE_END_SUCCEEDED(x) \
+	"<<<<< " + std::string(x) + " SUCCEEDED"
+#define CONSOLE_END_FAILED(x) \
+	"<<<<< " + std::string(x) + " FAILED"
+
+#define WPHEADER(x) \
+	"[WRAPPER]: " + std::string(x)
 
 namespace Ui {
 	class Wrapper;
@@ -35,22 +40,24 @@ class Wrapper : public QMainWindow {
 
 Q_OBJECT
 
+public slots:
+	void consoleAppendInfo(const std::string& info = "");
+	void consoleAppendError(const std::string& error = "");
+	void loadButtonPressed();
+	void startButtonPressed();
+	void stopButtonPressed();
+	void resetButtonPressed();
+	void registeButtonPressed();
+
 public:
     explicit Wrapper(QWidget* parent = nullptr);
 	~Wrapper();
     // We will delete it when kinect is added in
 
 private:
-	inline void consoleAppendInfo(const std::string& info);
-	inline void consoleAppendError(const std::string& error);
-	void loadCloud(const QStringList& filenames);
+	int loadCloud(const QStringList& filenames);
 	void addToCloudSet(PointCloud<PointXYZRGB>::Ptr cloud);
-
-public slots:
-	void loadButtonPressed();
-    void startButtonPressed();
-	void stopButtonPressed();
-	void resetButtonPressed();
+	inline void clearCloudSet();
 
 private:
 	bool m_start;

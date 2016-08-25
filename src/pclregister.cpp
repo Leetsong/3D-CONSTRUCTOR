@@ -19,21 +19,22 @@ PCLRegister::~PCLRegister() {
 
 void PCLRegister::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_cloudSet = cloudSet;
+	m_ptrToProcessingCloud = 0;
 }
 
-void PCLRegister::runRegistration() {
-	initialize();
-
-	int ptrToProcessingCloud = 0;
-	int ptrToNewestCloud = -1;
-
-	while (true) {
-		ptrToNewestCloud = static_cast<int>(m_cloudSet->size()) - 1;
-		if (ptrToProcessingCloud < ptrToNewestCloud) {
-			update(ptrToProcessingCloud);
-			ptrToProcessingCloud++;
-		}
+int PCLRegister::runRegistration() {
+	if((m_cloudSet == nullptr) || (m_cloudSet->size() == 0)) {
+		emit postError(PRHEADER("No input point clouds."));
+		return -1;
 	}
+
+	initialize();
+	if(m_ptrToProcessingCloud < static_cast<int>(m_cloudSet->size())) {
+		update(m_ptrToProcessingCloud);
+		m_ptrToProcessingCloud++;
+	}
+
+	return 0;
 }
 
 vtkRenderWindow* PCLRegister::PCLRegister::getRenderWindow() {

@@ -2,27 +2,41 @@
 
 Controller::Controller() :
 	m_animate(false),
+	m_cloudSet(nullptr),
+	m_kinect(nullptr),
+	m_opengl(nullptr),
 	m_size(0),
 	m_pointer(0) {
-
+	m_pcl._register = nullptr;
+	m_pcl._viewer = nullptr;
 }
 
 Controller::~Controller() {
 }
 
-void Controller::setAnimate(bool animate) {
+int Controller::setAnimate(bool animate) {
 	m_animate = animate;
 	if(m_animate == true) {
-		m_kinect->setAnimate(true);
-		runLater();
+		if(m_kinect->setAnimate(true) == 0) {
+			runLater();
+		} else {
+			m_animate = false;
+			m_kinect->setAnimate(false);
+			m_opengl->setAnimate(false);
+			return -1;
+		}
 	} else {
 		m_kinect->setAnimate(false);
 		m_opengl->setAnimate(false);
 	}
+	return 0;
 }
 
 void Controller::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_cloudSet = cloudSet;
+	m_kinect->setCloudSet(m_cloudSet);
+	m_opengl->setCloud(nullptr);
+	m_pcl._register->setCloudSet(m_cloudSet);
 }
 
 void Controller::setKinectReceiver(KinectReceiver * kinect) {
@@ -33,8 +47,16 @@ void Controller::setOpenGLViewer(OpenGLViewer * opengl) {
 	m_opengl = opengl;
 }
 
-void Controller::setPCLViewer(QVTKWidget * pcl) {
-	m_pcl = pcl;
+void Controller::setPCL(PCLRegister* pclregister, QVTKWidget* pclviewer) {
+	m_pcl._register = pclregister;
+	m_pcl._viewer = pclviewer;
+
+	// set qvtkwindow(pclviewer)
+	m_pcl._viewer->SetRenderWindow(m_pcl._register->getRenderWindow());
+	m_pcl._register->setupInteractor(m_pcl._viewer->GetInteractor(), m_pcl._viewer->GetRenderWindow());
+	m_pcl._viewer->update();
+	
+	emit postInfo(CTHEADER("qvtkwindow successfully setup"));
 }
 
 inline void Controller::runLater() {
@@ -52,6 +74,10 @@ void Controller::run() {
 	if(m_animate == true) {
 		runLater();
 	}
+}
+
+int Controller::runRegistration() {
+	return m_pcl._register->runRegistration();
 }
 
 bool Controller::event(QEvent* event) {
@@ -77,5 +103,5 @@ void Controller::openglUpdatedOnce() {
 }
 
 void Controller::pclUpdatedOnce() {
-	m_pcl->update();
+	m_pcl._viewer->update();
 }
