@@ -12,4 +12,4 @@ This is a 3D constructor for 3D reconstruction running on windows 10. By using d
 
 ## Attention
 
-If you have any problems in compiling and installing PCL 1.8, [this page](http://blog.csdn.net/mr_alwayswannago/article/details/50718928) may help you in some degree.
+If you have any problems in compiling and installing PCL 1.8, [this page](http://leetsong.github.io/2016/08/05/post-6/) may help you in some degree.

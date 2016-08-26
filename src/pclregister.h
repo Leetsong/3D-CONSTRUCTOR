@@ -69,9 +69,9 @@ private:
 	int m_ptrToProcessingCloud;
 	bool m_isFirst;
 	PointCloud<PointXYZRGB> m_globalCloud;
-	PointCloud<PointXYZRGB> m_reCloud;
-	PointCloud<PointXYZRGB> m_curCloud;
-	PointCloud<PointXYZRGB> m_lastCloud;
+	PointCloud<PointXYZRGB> m_resultantCloud;
+	PointCloud<PointXYZRGB> m_currentCloud;
+	PointCloud<PointXYZRGB> m_previousCloud;
 	IterativeClosestPointNonLinear<PointXYZRGB, PointXYZRGB> m_icpNl;
 	double m_transformationEpsilon;
 	double m_maxCorrespondenceDistance;

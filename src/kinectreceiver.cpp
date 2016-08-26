@@ -317,7 +317,7 @@ int KinectReceiver::setAnimate(bool animate) {
 	if(m_animate) {
 		if(m_pCloudSet == nullptr) {
 			emit postError(KRHEADER("No memory to contain point cloud\n"));
-			m_animate == false;
+			m_animate = false;
 			return -1;
 		}
 		if (needInitialize == true) {

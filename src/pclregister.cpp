@@ -20,6 +20,17 @@ PCLRegister::~PCLRegister() {
 void PCLRegister::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_cloudSet = cloudSet;
 	m_ptrToProcessingCloud = 0;
+
+	// clear cloud
+	m_currentCloud.clear();
+	m_currentCloud.points.swap(std::vector<PointXYZRGB, Eigen::aligned_allocator<PointXYZRGB>>());
+	m_currentCloud.resize(0);
+	m_resultantCloud.clear();
+	m_resultantCloud.points.swap(std::vector<PointXYZRGB, Eigen::aligned_allocator<PointXYZRGB>>());
+	m_resultantCloud.resize(0);
+	m_globalCloud.clear();
+	m_globalCloud.points.swap(std::vector<PointXYZRGB, Eigen::aligned_allocator<PointXYZRGB>>());
+	m_globalCloud.resize(0);
 }
 
 int PCLRegister::runRegistration() {
@@ -87,13 +98,13 @@ void PCLRegister::copyFromCloud(PointCloud<PointXYZRGB>& tgt_cloud, const Cloud*
 
 inline void PCLRegister::copyToCurCloud(int ptrToProcessingCloud) {
 	// Save current cloud
-	copyPointCloud(m_curCloud, m_lastCloud);
-	copyFromCloud(m_curCloud, (*m_cloudSet)[ptrToProcessingCloud]);
+	copyPointCloud(m_currentCloud, m_previousCloud);
+	copyFromCloud(m_currentCloud, (*m_cloudSet)[ptrToProcessingCloud]);
 }
 
 inline void PCLRegister::filter() {
 	removeNaN();
-	downSample(m_curCloud);
+	downSample(m_currentCloud);
 }
 
 void PCLRegister::removeNaN() {
@@ -101,9 +112,9 @@ void PCLRegister::removeNaN() {
 	std::vector<int> indices;
 
 	i++;
-	std::cout << "[" << i << "]: Before Remove NaN: " << m_curCloud.size() << std::endl;
-	removeNaNFromPointCloud(m_curCloud, m_curCloud, indices);
-	std::cout << "[" << i << "]: After Remove NaN: " << m_curCloud.size() << std::endl;
+	std::cout << "[" << i << "]: Before Remove NaN: " << m_currentCloud.size() << std::endl;
+	removeNaNFromPointCloud(m_currentCloud, m_currentCloud, indices);
+	std::cout << "[" << i << "]: After Remove NaN: " << m_currentCloud.size() << std::endl;
 }
 
 void PCLRegister::downSample(PointCloud<PointXYZRGB>& srcCloud) {
@@ -122,10 +133,10 @@ void PCLRegister::downSample(PointCloud<PointXYZRGB>& srcCloud) {
 }
 
 inline void PCLRegister::firstUpdate() {
-	copyFromCloud(m_curCloud, (*m_cloudSet)[0]);
+	copyFromCloud(m_currentCloud, (*m_cloudSet)[0]);
 	removeNaN();
-	downSample(m_curCloud);
-	copyPointCloud(m_curCloud, m_globalCloud);
+	downSample(m_currentCloud);
+	copyPointCloud(m_currentCloud, m_globalCloud);
 }
 
 void PCLRegister::initialize() {
@@ -137,20 +148,20 @@ void PCLRegister::initialize() {
 }
 
 void PCLRegister::registe() {
-	m_reCloud.clear();
+	m_resultantCloud.clear();
 
 	// Align this to last, and save it in resultant
-	m_icpNl.setInputSource(boost::make_shared<const PointCloud<PointXYZRGB>>(m_curCloud));
-	m_icpNl.setInputTarget(boost::make_shared<const PointCloud<PointXYZRGB>>(m_lastCloud));
-	m_icpNl.align(m_reCloud);
+	m_icpNl.setInputSource(boost::make_shared<const PointCloud<PointXYZRGB>>(m_currentCloud));
+	m_icpNl.setInputTarget(boost::make_shared<const PointCloud<PointXYZRGB>>(m_previousCloud));
+	m_icpNl.align(m_resultantCloud);
 
 	// Transform to first cloud
-	transformPointCloud(m_reCloud, m_reCloud, m_globalTransform);
+	transformPointCloud(m_resultantCloud, m_resultantCloud, m_globalTransform);
 	m_globalTransform = m_globalTransform * m_icpNl.getLastIncrementalTransformation();
 }
 
 void PCLRegister::fuse() {
-	m_globalCloud += m_reCloud;
+	m_globalCloud += m_resultantCloud;
 	// TODO: Further Processing for fusion
 	// downSample to make it as small as possible
 	downSample(m_globalCloud);
@@ -186,9 +197,9 @@ void PCLRegister::visualize() {
 	m_viewer->addPointCloud(boost::make_shared<const PointCloud<PointXYZRGB>>(m_globalCloud), globalCloudColorHandler, "GLOBAL");
 	std::cout << "Global Cloud Points: " << m_globalCloud.size() << std::endl;
 
-	if (m_reCloud.size() > 0) {
-		visualization::PointCloudColorHandlerCustom<PointXYZRGB> reCloudColorHandler(boost::make_shared<const PointCloud<PointXYZRGB>>(m_reCloud), 0, 255, 0);
-		m_viewer->addPointCloud(boost::make_shared<const PointCloud<PointXYZRGB>>(m_reCloud), reCloudColorHandler, "RESULT");
+	if (m_resultantCloud.size() > 0) {
+		visualization::PointCloudColorHandlerCustom<PointXYZRGB> reCloudColorHandler(boost::make_shared<const PointCloud<PointXYZRGB>>(m_resultantCloud), 0, 255, 0);
+		m_viewer->addPointCloud(boost::make_shared<const PointCloud<PointXYZRGB>>(m_resultantCloud), reCloudColorHandler, "RESULT");
 	}
 
 	emit postUpdateEvent();

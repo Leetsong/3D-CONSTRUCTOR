@@ -10,6 +10,11 @@ Desktop.ini
 # =======
 build
 
+# ========
+#  editor
+# ========
+*.swp
+
 # =====
 #  C++
 # =====
@@ -45,3 +50,6 @@ build
 *.exe
 *.out
 *.app
+
+# Qt
+*.autosave.*

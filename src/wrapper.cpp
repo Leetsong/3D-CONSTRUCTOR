@@ -64,7 +64,7 @@ int Wrapper::loadCloud(const QStringList& filenames) {
 	std::string ex_pcd = ".pcd", ex_ply = ".ply";
 	for (size_t i = 0; i < filenames.size(); i++) {
 		std::stringstream info, error_info;
-		std::string filename(filenames.at(i).toLocal8Bit().constData());
+		std::string filename(filenames.at(static_cast<int>(i)).toLocal8Bit().constData());
 		PointCloud<PointXYZRGB>::Ptr cloud(new PointCloud<PointXYZRGB>());
 
 		if (filename.substr(filename.find('.')) == ex_pcd) {
@@ -168,7 +168,8 @@ void Wrapper::startButtonPressed() {
 	PRINT_INFO("start button pressed\n");
 	consoleAppendInfo(CONSOLE_START("Start"));
 	if(m_start == true) return;
-	if(m_controller->setAnimate(true) != 0) {
+	m_start = true;
+	if(m_controller->setAnimate(m_start) != 0) {
 		consoleAppendInfo(CONSOLE_END_FAILED("Start"));
 		consoleAppendError("");
 	}
@@ -178,7 +179,8 @@ void Wrapper::stopButtonPressed() {
 	PRINT_INFO("stop button pressed\n");
 	consoleAppendInfo(CONSOLE_START("Stop"));
 	if (m_start == false) return;
-	m_controller->setAnimate(false);
+	m_start = false;
+	m_controller->setAnimate(m_start);
 }
 
 void Wrapper::resetButtonPressed() {
