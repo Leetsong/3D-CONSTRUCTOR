@@ -37,6 +37,8 @@ void Controller::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_kinect->setCloudSet(m_cloudSet);
 	m_opengl->setCloud(nullptr);
 	m_pcl._register->setCloudSet(m_cloudSet);
+	m_size = 0;
+	m_pointer = 0;
 }
 
 void Controller::setKinectReceiver(KinectReceiver * kinect) {

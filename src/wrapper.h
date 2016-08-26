@@ -4,6 +4,7 @@
 // Qt
 #include <QMainWindow>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QStringList>
 
 // controller
@@ -28,6 +29,8 @@
 	"<<<<< " + std::string(x) + " SUCCEEDED"
 #define CONSOLE_END_FAILED(x) \
 	"<<<<< " + std::string(x) + " FAILED"
+#define CONSOLE_END_CANCELED(x) \
+	"<<<<< " + std::string(x) + " CANCELED"
 
 #define WPHEADER(x) \
 	"[WRAPPER]: " + std::string(x)
@@ -43,11 +46,14 @@ Q_OBJECT
 public slots:
 	void consoleAppendInfo(const std::string& info = "");
 	void consoleAppendError(const std::string& error = "");
-	void loadButtonPressed();
 	void startButtonPressed();
 	void stopButtonPressed();
-	void resetButtonPressed();
 	void registeButtonPressed();
+	void loadActionTriggered();
+	void resetActionTriggered();
+	void iterationsActionTriggered();
+	void distanceActionTriggered();
+	void epsilonActionTriggered();
 
 public:
     explicit Wrapper(QWidget* parent = nullptr);

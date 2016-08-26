@@ -28,22 +28,18 @@ Wrapper::Wrapper(QWidget* parent) :
 	connect(m_kinectReceiver, SIGNAL(postError(const std::string&)), this, SLOT(consoleAppendError(const std::string&)));
 	connect(m_pclRegister, SIGNAL(postInfo(const std::string&)), this, SLOT(consoleAppendInfo(const std::string&)));
 	connect(m_pclRegister, SIGNAL(postError(const std::string&)), this, SLOT(consoleAppendError(const std::string&)));
-	connect(m_ui->loadButton, SIGNAL(clicked()), this, SLOT(loadButtonPressed()));
     connect(m_ui->startButton, SIGNAL(clicked()), this, SLOT(startButtonPressed()));
 	connect(m_ui->stopButton, SIGNAL(clicked()), this, SLOT(stopButtonPressed()));
-	connect(m_ui->resetButton, SIGNAL(clicked()), this, SLOT(resetButtonPressed()));
 	connect(m_ui->registeButton, SIGNAL(clicked()), this, SLOT(registeButtonPressed()));
-	connect(m_ui->maximumIterationsSpinBox, SIGNAL(valueChanged(int)), m_pclRegister, SLOT(setMaximumIterations(int)));
-	connect(m_ui->maxCorrespondenceDistanceDoubleSpinBox, SIGNAL(valueChanged(const QString&)), m_pclRegister, SLOT(setMaxCorrespondenceDistance(const QString&)));
-	connect(m_ui->transformationEpsilonDoubleSpinBox, SIGNAL(valueChanged(const QString&)), m_pclRegister, SLOT(setTransformationEpsilon(const QString&)));
 	connect(m_kinectReceiver, SIGNAL(postUpdateEvent()), m_controller, SLOT(kinectUpdatedOnce()));
 	connect(m_ui->openGLViewer, SIGNAL(postUpdateEvent()), m_controller, SLOT(openglUpdatedOnce()));
 	connect(m_pclRegister, SIGNAL(postUpdateEvent()), m_controller, SLOT(pclUpdatedOnce()));
+	connect(m_ui->loadAction, SIGNAL(triggered()), this, SLOT(loadActionTriggered()));
+	connect(m_ui->resetAction, SIGNAL(triggered()), this, SLOT(resetActionTriggered()));
+	connect(m_ui->iterationsAction, SIGNAL(triggered()), this, SLOT(iterationsActionTriggered()));
+	connect(m_ui->distanceAction, SIGNAL(triggered()), this, SLOT(distanceActionTriggered()));
+	connect(m_ui->epsilonAction, SIGNAL(triggered()), this, SLOT(epsilonActionTriggered()));
 	consoleAppendInfo(WPHEADER("connections successfully setup"));
-
-	m_ui->maximumIterationsSpinBox->setValue(60);
-	m_ui->transformationEpsilonDoubleSpinBox->setValue(1e-6);
-	m_ui->maxCorrespondenceDistanceDoubleSpinBox->setValue(0.1);
 
 	consoleAppendInfo("============ 3D-CONSTRUCTOR SETUP DONE ============\n");
 }
@@ -149,21 +145,6 @@ void Wrapper::consoleAppendError(const std::string& error) {
 	}
 }
 
-void Wrapper::loadButtonPressed() {
-	QStringList filenames = QFileDialog::getOpenFileNames(this,
-		"Select one or more files to open",
-		"/home",
-		"pointclouds(*.pcd *.ply)"
-	);
-	consoleAppendInfo(CONSOLE_START("Load files"));
-	if(loadCloud(filenames) == 0) {
-		consoleAppendInfo(CONSOLE_END_SUCCEEDED("Load files"));
-	} else {
-		consoleAppendInfo(CONSOLE_END_FAILED("Load files"));
-		consoleAppendError("");
-	}
-}
-
 void Wrapper::startButtonPressed() {
 	PRINT_INFO("start button pressed\n");
 	consoleAppendInfo(CONSOLE_START("Start"));
@@ -183,14 +164,6 @@ void Wrapper::stopButtonPressed() {
 	m_controller->setAnimate(m_start);
 }
 
-void Wrapper::resetButtonPressed() {
-	PRINT_INFO("reset button pressed\n");
-	stopButtonPressed();
-	consoleAppendInfo(CONSOLE_START("Reset"));
-	clearCloudSet();
-	m_controller->setCloudSet(&m_cloudSet);
-}
-
 void Wrapper::registeButtonPressed() {
 	PRINT_INFO("registe button pressed\n");
 	consoleAppendInfo(CONSOLE_START("Regist"));
@@ -199,5 +172,72 @@ void Wrapper::registeButtonPressed() {
 	} else {
 		consoleAppendInfo(CONSOLE_END_FAILED("Registe"));
 		consoleAppendError("");
+	}
+}
+
+void Wrapper::loadActionTriggered() {
+	QStringList filenames = QFileDialog::getOpenFileNames(this,
+		"Select one or more files to open",
+		"/home",
+		"pointclouds(*.pcd *.ply)"
+	);
+	consoleAppendInfo(CONSOLE_START("Load files"));
+	if(loadCloud(filenames) == 0) {
+		consoleAppendInfo(CONSOLE_END_SUCCEEDED("Load files"));
+	} else {
+		consoleAppendInfo(CONSOLE_END_FAILED("Load files"));
+		consoleAppendError("");
+	}
+}
+
+void Wrapper::resetActionTriggered() {
+	stopButtonPressed();
+	consoleAppendInfo(CONSOLE_START("Reset"));
+	clearCloudSet();
+	m_controller->setCloudSet(&m_cloudSet);
+}
+
+void Wrapper::iterationsActionTriggered() {
+	bool ok;  
+	int iterations = QInputDialog::getInt(this, "Setting", "iterations: ", 60, 1, 2147483647, 1, &ok);
+	consoleAppendInfo(CONSOLE_START("Set ICP Max Iterations"));
+	if(ok)  {
+		m_pclRegister->setMaximumIterations(iterations);
+
+		std::stringstream info;
+		info << "Set max iterations to " << iterations;
+		consoleAppendInfo(CONSOLE_END_SUCCEEDED(info.str()));
+	} else {
+		consoleAppendInfo(CONSOLE_END_CANCELED("Set ICP Max Iterations"));
+	}
+}
+
+void Wrapper::distanceActionTriggered() {
+	bool ok;  
+	int distance = QInputDialog::getDouble(this,"Setting", "distance: ", 0.1f, 0, std::numeric_limits<double>::infinity(), 3, &ok);
+	consoleAppendInfo(CONSOLE_START("Set ICP Max Correspondence Distance"));
+	if(ok)  {
+		m_pclRegister->setMaxCorrespondenceDistance(distance);
+
+		std::stringstream info;
+		info << "Set max correspondence distance to " << distance;
+		consoleAppendInfo(CONSOLE_END_SUCCEEDED(info.str()));
+	} else {
+		consoleAppendInfo(CONSOLE_END_CANCELED("Set ICP Max Correspondence Distance"));
+	}
+}
+
+void Wrapper::epsilonActionTriggered() {
+	bool ok;  
+	int epsilon = QInputDialog::getDouble(this,"Setting", "epsilon: ", 0.000001f, 0, 1, 15, &ok);
+	consoleAppendInfo(CONSOLE_START("Set ICP Transformation Epsilon"));
+	if(ok)  {
+		m_pclRegister->setTransformationEpsilon(epsilon);
+
+		std::stringstream info;
+		info << "Set transformation epsilon to " << epsilon;
+		consoleAppendInfo(CONSOLE_END_SUCCEEDED(info.str()));
+	} else {
+		consoleAppendInfo(CONSOLE_END_CANCELED("Set ICP Transformation Epsilon"));
 	}
 }

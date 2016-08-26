@@ -32,13 +32,6 @@ signals:
 	void postError(const std::string& error);
 	void postUpdateEvent();
 
-public slots:
-	void setTransformationEpsilon(const QString &text);
-	void setMaxCorrespondenceDistance(const QString &text);
-	void setTransformationEpsilon(double transformationEpsilon = 1e-6);
-	void setMaxCorrespondenceDistance(double maxCorrespondenceDistance = 0.1);
-	void setMaximumIterations(int maximumIterations = 60);
-
 public:
 	PCLRegister(double transformationEpsilon = 1e-6, double maxCorrespondenceDistance = 0.1, int maximumIterations = 60);
 	~PCLRegister();
@@ -46,6 +39,9 @@ public:
 	int runRegistration();
 	void setCloudSet(std::vector<Cloud*>* cloudSet);
 	void setupInteractor(vtkRenderWindowInteractor *iren, vtkRenderWindow *win);
+	void setTransformationEpsilon(double transformationEpsilon = 1e-6);
+	void setMaxCorrespondenceDistance(double maxCorrespondenceDistance = 0.1);
+	void setMaximumIterations(int maximumIterations = 60);
 
 private:
 	void initialize();

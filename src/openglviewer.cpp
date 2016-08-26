@@ -6,7 +6,7 @@ OpenGLViewer::OpenGLViewer(QWidget* parent) :
     m_mouseCurrentX(0),
     m_mouseCurrentY(0),
     m_cloud(nullptr),
-    m_needInitialize(false),
+    m_needInitialize(true),
     m_animate(false),
     m_stepLRrotate(0),
     m_stepUDrotate(0),
@@ -45,8 +45,8 @@ void OpenGLViewer::renderGL() {
     makeCurrent();
 
     // Background
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+    glClearColor(0.1f, 0.1f, 1.0f, 1.0f);
 
 	if (m_cloud != nullptr) {
 		// Active shader

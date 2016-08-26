@@ -56,14 +56,6 @@ void PCLRegister::setupInteractor(vtkRenderWindowInteractor *iren, vtkRenderWind
 	m_viewer->setupInteractor(iren, win);
 }
 
-void PCLRegister::setTransformationEpsilon(const QString & text) {
-	setTransformationEpsilon(text.toDouble());
-}
-
-void PCLRegister::setMaxCorrespondenceDistance(const QString & text) {
-	setMaxCorrespondenceDistance(text.toDouble());
-}
-
 void PCLRegister::setTransformationEpsilon(double transformationEpsilon) {
 	m_transformationEpsilon = transformationEpsilon;
 }
