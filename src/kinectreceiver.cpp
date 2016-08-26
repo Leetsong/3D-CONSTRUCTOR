@@ -247,43 +247,98 @@ HRESULT KinectReceiver::ProcessFrame(
 		hr = m_pCoordinateMapper->MapColorFrameToDepthSpace(nDepthWidth*nDepthHeight, pDepthBuffer, nColorWidth*nColorHeight, m_pColorFrameToDepthSpace);
 	}
 
+	//if (SUCCEEDED(hr)) {
+	//	Cloud* pCurCloud = new Cloud;
+	//	pCurCloud->points = new CloudPoint[IMG_HEIGHT * IMG_WIDTH];
+	//	pCurCloud->size = IMG_HEIGHT * IMG_WIDTH;
+
+	//	for (int colorIndex = 0; colorIndex < nColorHeight*nColorWidth; colorIndex++) {
+	//		// Get vertex position
+	//		DepthSpacePoint vDepthSpacePoint = m_pColorFrameToDepthSpace[colorIndex];
+
+	//		if (vDepthSpacePoint.X != -std::numeric_limits<float>::infinity() &&
+	//			vDepthSpacePoint.Y != -std::numeric_limits<float>::infinity()
+	//			) {
+	//			int vertexIndex = colorIndex;
+	//			int depthX = static_cast<int>(vDepthSpacePoint.X + 0.5f);
+	//			int depthY = static_cast<int>(vDepthSpacePoint.Y + 0.5f);
+
+	//			if (depthX >= 0 && depthX < nDepthHeight && depthY >= 0 && depthY < nDepthWidth) {
+	//				// Get vertex position
+	//				int depthIndex = depthX + depthY * nDepthWidth;
+	//				pCurCloud->points[vertexIndex].position.x = m_pDepthFrameToCameraSpace[depthIndex].X;
+	//				pCurCloud->points[vertexIndex].position.y = m_pDepthFrameToCameraSpace[depthIndex].Y;
+	//				pCurCloud->points[vertexIndex].position.z = -m_pDepthFrameToCameraSpace[depthIndex].Z;
+
+	//				// Get vertex color
+	//				pCurCloud->points[vertexIndex].color.r = ((float)pColorBuffer[colorIndex].rgbRed) / 256;
+	//				pCurCloud->points[vertexIndex].color.g = ((float)pColorBuffer[colorIndex].rgbGreen) / 256;
+	//				pCurCloud->points[vertexIndex].color.b = ((float)pColorBuffer[colorIndex].rgbBlue) / 256;
+	//				pCurCloud->points[vertexIndex].color.a = 1.0f;
+	//			}
+	//		}
+	//	}
+	//	m_pCloudSet->push_back(pCurCloud);
+	//	emit postUpdateEvent();
+
+	//	PRINT_INFO("GET ONE FRAME\n");
+	//}
+
 	if (SUCCEEDED(hr)) {
-		Cloud* pCurCloud = new Cloud;
-		pCurCloud->points = new CloudPoint[IMG_HEIGHT * IMG_WIDTH];
-		pCurCloud->size = IMG_HEIGHT * IMG_WIDTH;
+		Cloud* curCloud = new Cloud();
+		curCloud->points = new CloudPoint[IMG_HEIGHT * IMG_WIDTH];
+		curCloud->size = IMG_HEIGHT * IMG_WIDTH;
+
+		DepthSpacePoint vDepthSpacePoint;
+		int pointIndex, depthX, depthY;
 
 		for (int colorIndex = 0; colorIndex < nColorHeight*nColorWidth; colorIndex++) {
 			// Get vertex position
-			DepthSpacePoint vDepthSpacePoint = m_pColorFrameToDepthSpace[colorIndex];
+			vDepthSpacePoint = m_pColorFrameToDepthSpace[colorIndex];
+			pointIndex = colorIndex;
 
 			if (vDepthSpacePoint.X != -std::numeric_limits<float>::infinity() &&
 				vDepthSpacePoint.Y != -std::numeric_limits<float>::infinity()
 				) {
-				int vertexIndex = colorIndex;
-				int depthX = static_cast<int>(vDepthSpacePoint.X + 0.5f);
-				int depthY = static_cast<int>(vDepthSpacePoint.Y + 0.5f);
+				depthX = static_cast<int>(vDepthSpacePoint.X + 0.5f);
+				depthY = static_cast<int>(vDepthSpacePoint.Y + 0.5f);
 
 				if (depthX >= 0 && depthX < nDepthHeight && depthY >= 0 && depthY < nDepthWidth) {
 					// Get vertex position
 					int depthIndex = depthX + depthY * nDepthWidth;
-					pCurCloud->points[vertexIndex].position.x = m_pDepthFrameToCameraSpace[depthIndex].X;
-					pCurCloud->points[vertexIndex].position.y = m_pDepthFrameToCameraSpace[depthIndex].Y;
-					pCurCloud->points[vertexIndex].position.z = -m_pDepthFrameToCameraSpace[depthIndex].Z;
+					curCloud->points[pointIndex].position.x = m_pDepthFrameToCameraSpace[depthIndex].X;
+					curCloud->points[pointIndex].position.y = m_pDepthFrameToCameraSpace[depthIndex].Y;
+					curCloud->points[pointIndex].position.z = -m_pDepthFrameToCameraSpace[depthIndex].Z;
 
 					// Get vertex color
-					pCurCloud->points[vertexIndex].color.r = ((float)pColorBuffer[colorIndex].rgbRed) / 256;
-					pCurCloud->points[vertexIndex].color.g = ((float)pColorBuffer[colorIndex].rgbGreen) / 256;
-					pCurCloud->points[vertexIndex].color.b = ((float)pColorBuffer[colorIndex].rgbBlue) / 256;
-					pCurCloud->points[vertexIndex].color.a = 1.0f;
+					curCloud->points[pointIndex].color.r = ((float)pColorBuffer[colorIndex].rgbRed) / 256;
+					curCloud->points[pointIndex].color.g = ((float)pColorBuffer[colorIndex].rgbGreen) / 256;
+					curCloud->points[pointIndex].color.b = ((float)pColorBuffer[colorIndex].rgbBlue) / 256;
+					curCloud->points[pointIndex].color.a = 1.0f;
+				} else {
+					curCloud->points[pointIndex].position.x = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].position.y = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].position.z = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].color.r = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].color.g = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].color.b = std::numeric_limits<float>::infinity();
+					curCloud->points[pointIndex].color.a = 1.0f;
 				}
+			} else {
+				curCloud->points[pointIndex].position.x = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].position.y = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].position.z = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].color.r = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].color.g = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].color.b = std::numeric_limits<float>::infinity();
+				curCloud->points[pointIndex].color.a = 1.0f;
 			}
 		}
-		m_pCloudSet->push_back(pCurCloud);
+
+		m_pCloudSet->push_back(curCloud);
 		emit postUpdateEvent();
-
-		PRINT_INFO("GET ONE FRAME\n");
 	}
-
+	
 	return S_OK;
 }
 
