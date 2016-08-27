@@ -31,6 +31,8 @@ void PCLRegister::setCloudSet(std::vector<Cloud*>* cloudSet) {
 	m_globalCloud.clear();
 	m_globalCloud.points.swap(std::vector<PointXYZRGB, Eigen::aligned_allocator<PointXYZRGB>>());
 	m_globalCloud.resize(0);
+
+	visualize();
 }
 
 int PCLRegister::runRegistration() {
@@ -187,7 +189,6 @@ void PCLRegister::visualize() {
 
 	visualization::PointCloudColorHandlerCustom<PointXYZRGB> globalCloudColorHandler(boost::make_shared<const PointCloud<PointXYZRGB>>(m_globalCloud), 255, 0, 0);
 	m_viewer->addPointCloud(boost::make_shared<const PointCloud<PointXYZRGB>>(m_globalCloud), globalCloudColorHandler, "GLOBAL");
-	std::cout << "Global Cloud Points: " << m_globalCloud.size() << std::endl;
 
 	if (m_resultantCloud.size() > 0) {
 		visualization::PointCloudColorHandlerCustom<PointXYZRGB> reCloudColorHandler(boost::make_shared<const PointCloud<PointXYZRGB>>(m_resultantCloud), 0, 255, 0);

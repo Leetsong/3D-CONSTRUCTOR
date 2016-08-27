@@ -22,12 +22,10 @@ int Controller::setAnimate(bool animate) {
 		} else {
 			m_animate = false;
 			m_kinect->setAnimate(false);
-			m_opengl->setAnimate(false);
 			return -1;
 		}
 	} else {
 		m_kinect->setAnimate(false);
-		m_opengl->setAnimate(false);
 	}
 	return 0;
 }
@@ -70,9 +68,9 @@ void Controller::run() {
 
 	size_t pointer = m_pointer, size = m_size;
 	if(pointer < size) {
-		m_opengl->setAnimate(true, (*m_cloudSet)[pointer]);
+		m_opengl->setCloud((*m_cloudSet)[pointer]);
 	}
-
+	
 	if(m_animate == true) {
 		runLater();
 	}

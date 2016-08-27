@@ -191,8 +191,11 @@ void Wrapper::loadActionTriggered() {
 }
 
 void Wrapper::resetActionTriggered() {
-	stopButtonPressed();
 	consoleAppendInfo(CONSOLE_START("Reset"));
+	if(m_start == true) {
+		m_start = false;
+		m_controller->setAnimate(m_start);
+	}
 	clearCloudSet();
 	m_controller->setCloudSet(&m_cloudSet);
 }

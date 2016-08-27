@@ -1,20 +1,19 @@
 #include "openglviewer.h"
 
 OpenGLViewer::OpenGLViewer(QWidget* parent) :
-    QOpenGLWidget(parent),
+	QOpenGLWidget(parent),
+	m_needInitialize(true),
     m_isFirstMouseIn(true),
     m_mouseCurrentX(0),
     m_mouseCurrentY(0),
     m_cloud(nullptr),
-    m_needInitialize(true),
-    m_animate(false),
     m_stepLRrotate(0),
     m_stepUDrotate(0),
     m_stepFBmove(0),
     m_shader(nullptr),
-    m_shaderAttrColor(0),
-    m_shaderAttrPosition(0),
-    m_shaderUnifromTransform(0) {
+    m_shaderAttrColor(-1),
+    m_shaderAttrPosition(-1),
+    m_shaderUnifromTransform(-1) {
 
 }
 
@@ -26,29 +25,39 @@ void OpenGLViewer::initializeGL() {
     initializeOpenGLFunctions();
     initializeShader();
     initializeMovementEvent();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-void OpenGLViewer::render() {
-    if(m_needInitialize == true) {
-        initializeGL();
-        m_needInitialize = false;
-    }
+void OpenGLViewer::setCloud(Cloud *cloud) {
+	m_cloud = cloud;
 
-    resizeGL(width(), height());
-    renderGL();
+	paintGL();
 
 	emit postUpdateEvent();
 }
 
-void OpenGLViewer::renderGL() {
-    makeCurrent();
+void OpenGLViewer::resizeGL(int width, int height) {
+	if(m_needInitialize == true) {
+		initializeGL();
+		m_needInitialize = false;
+	}
 
-    // Background
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-    glClearColor(0.1f, 0.1f, 1.0f, 1.0f);
+    const qreal retinaScale = devicePixelRatio();
+    glViewport(0, 0, width * retinaScale, height * retinaScale);
+}
+
+void OpenGLViewer::paintGL() {
+	if (m_needInitialize == true) {
+		return;
+	}
 
 	if (m_cloud != nullptr) {
+		doMovementEvent();
+
+		// Background
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 		// Active shader
 		m_shader->bind();
 		setShaderParameters();
@@ -66,17 +75,9 @@ void OpenGLViewer::renderGL() {
 		glDisableVertexAttribArray(0);
 
 		m_shader->release();
+
+		update();
 	}
-}
-
-void OpenGLViewer::resizeGL(int width, int height) {
-    const qreal retinaScale = devicePixelRatio();
-    glViewport(0, 0, width * retinaScale, height * retinaScale);
-    doMovementEvent();
-}
-
-void OpenGLViewer::paintGL() {
-
 }
 
 inline void OpenGLViewer::initializeShader() {
@@ -132,18 +133,6 @@ void OpenGLViewer::initializeMovementEvent() {
     }
 }
 
-void OpenGLViewer::setCloud(Cloud *cloud) {
-    m_cloud = cloud;
-}
-
-void OpenGLViewer::setAnimate(bool animate, Cloud* cloud) {
-	if(cloud != nullptr) setCloud(cloud);
-    m_animate = animate;
-    if(m_animate == true) {
-        render();
-    }
-}
-
 void OpenGLViewer::doMovementEvent() {
     doKeyMovementEvent();
     doMouseMovementEvent();
@@ -169,74 +158,68 @@ void OpenGLViewer::doMouseMovementEvent() {
 }
 
 void OpenGLViewer::keyPressEvent(QKeyEvent* event) {
-    if(m_animate) {
 #ifdef TEST_
-        std::cout << "Key Pressed: " << event->key() << ": ";
-        switch(event->key()) {
-        case Qt::Key_W: std::cout << "W"; break;
-        case Qt::Key_S: std::cout << "S"; break;
-        case Qt::Key_A: std::cout << "A"; break;
-        case Qt::Key_D: std::cout << "D"; break;
-        case Qt::Key_AddFavorite: std::cout << "+"; break;
-        case Qt::Key_Minus: std::cout << "-"; break;
-        default: std::cout << "others";
-        }
-        std::cout << std::endl;
+    std::cout << "Key Pressed: " << event->key() << ": ";
+    switch(event->key()) {
+    case Qt::Key_W: std::cout << "W"; break;
+    case Qt::Key_S: std::cout << "S"; break;
+    case Qt::Key_A: std::cout << "A"; break;
+    case Qt::Key_D: std::cout << "D"; break;
+    case Qt::Key_AddFavorite: std::cout << "+"; break;
+    case Qt::Key_Minus: std::cout << "-"; break;
+    default: std::cout << "others";
+    }
+    std::cout << std::endl;
 #endif
 
-        if(event->key() < 0 || event->key() > 255) {
-            return ;
-        }
-
-        m_keyStatus[event->key()] = OPENGL_KEY_PRESSED;
+    if(event->key() < 0 || event->key() > 255) {
+        return ;
     }
+
+    m_keyStatus[event->key()] = OPENGL_KEY_PRESSED;
 }
 
 void OpenGLViewer:: keyReleaseEvent(QKeyEvent* event) {
-    if(m_animate) {
 #ifdef TEST_
-        std::cout << "Key Released: " << event->key() << ": ";
-        switch(event->key()) {
-        case Qt::Key_W: std::cout << "W"; break;
-        case Qt::Key_S: std::cout << "S"; break;
-        case Qt::Key_A: std::cout << "A"; break;
-        case Qt::Key_D: std::cout << "D"; break;
-        case Qt::Key_AddFavorite: std::cout << "+"; break;
-        case Qt::Key_Minus: std::cout << "-"; break;
-        default: std::cout << "others";
-        }
-        std::cout << std::endl;
+    std::cout << "Key Released: " << event->key() << ": ";
+    switch(event->key()) {
+    case Qt::Key_W: std::cout << "W"; break;
+    case Qt::Key_S: std::cout << "S"; break;
+    case Qt::Key_A: std::cout << "A"; break;
+    case Qt::Key_D: std::cout << "D"; break;
+    case Qt::Key_AddFavorite: std::cout << "+"; break;
+    case Qt::Key_Minus: std::cout << "-"; break;
+    default: std::cout << "others";
+    }
+    std::cout << std::endl;
 #endif
 
-        if(event->key() < 0 || event->key() > 255) {
-            return ;
-        }
-
-        m_keyStatus[event->key()] = OPENGL_KEY_RELEASED;
+    if(event->key() < 0 || event->key() > 255) {
+        return ;
     }
+
+    m_keyStatus[event->key()] = OPENGL_KEY_RELEASED;
 }
 
 void OpenGLViewer::mouseMoveEvent(QMouseEvent* event) {
-    if(m_animate) {
-        if(event->buttons() & Qt::LeftButton) {
-    #ifdef TEST_
-        std::cout << "Mouse Left Button Pressed and Movement: (" << event->x() << ", " << event->y() << ")" <<  std::endl;
-    #endif
+	if (event->buttons() & Qt::LeftButton) {
+#ifdef TEST_
+		std::cout << "Mouse Left Button Pressed and Movement: (" << event->x() << ", " << event->y() << ")" << std::endl;
+#endif
 
-            if (m_isFirstMouseIn) {
-                m_mouseCurrentX = -(event->x());
-                m_mouseCurrentY = -(event->y());
-            }
+		if (m_isFirstMouseIn) {
+			m_mouseCurrentX = -(event->x());
+			m_mouseCurrentY = -(event->y());
+		}
 
-            if ((fabs(m_mouseCurrentX - event->x()) < DBL_EPSILON) &&
-                (fabs(m_mouseCurrentY -event->y()) < DBL_EPSILON)
-                ) {
-                // Position is not changed
-                return;
-            }
+		if ((fabs(m_mouseCurrentX - event->x()) < DBL_EPSILON) &&
+			(fabs(m_mouseCurrentY - event->y()) < DBL_EPSILON)
+			) {
+			// Position is not changed
+			return;
+		}
 
-            m_mouseCurrentX = event->x();
-            m_mouseCurrentY = event->y();
-        }
-    }
+		m_mouseCurrentX = event->x();
+		m_mouseCurrentY = event->y();
+	}
 }

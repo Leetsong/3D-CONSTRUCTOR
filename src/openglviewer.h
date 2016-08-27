@@ -14,7 +14,7 @@
 #define OVHEADER(x) \
 	"[OPENGL VIEWER]: " + std::string(x)
 
-class OpenGLViewer : public QOpenGLWidget, public QOpenGLFunctions {
+class OpenGLViewer : public QOpenGLWidget, protected QOpenGLFunctions {
 
 Q_OBJECT
 
@@ -30,7 +30,6 @@ public:
     OpenGLViewer(QWidget* parent = 0);
     ~OpenGLViewer();
     void setCloud(Cloud* cloud);
-    void setAnimate(bool animate, Cloud* cloud = nullptr);
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
@@ -48,15 +47,14 @@ private:
     void doKeyMovementEvent();
     void doMouseMovementEvent(); // bad behavior
     void render();
-    void renderGL();
 
 private:
+	bool m_needInitialize;
+
     uint m_keyStatus[256];
     bool m_isFirstMouseIn;
     double m_mouseCurrentX, m_mouseCurrentY; // bad behavior
 
-    bool m_needInitialize;
-    bool m_animate;
     Cloud* m_cloud;
 
     float m_stepLRrotate;
