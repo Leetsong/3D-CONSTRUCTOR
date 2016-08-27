@@ -34,12 +34,13 @@ Now the project can achieve:
 + Download this project, or write in command line the following instruction:
 
 ```
-git clone http://github.com/Leetsong/3D-CONSTRUCTOR.git
+git clone https://github.com/Leetsong/3D-CONSTRUCTOR.git
 ```
 
 + open CMake(GUI), set source and build as following(assume that the project locates in ` PATH/TO/PROJECT/3D-CONSTRUCTOR `):
 
 ` source: PATH/TO/PROJECT/3D-CONSTRUCTOR `
+
 ` build: PATH/TO/PROJECT/3D-CONSTRUCTOR/build  `
 
 + configure and generate it, and then open ` 3D-CONSTRUCTOR.sln ` in the directory ` build `, generate solution of ` 3D-CONSTRUCTOR `, and then ` 3D-CONSTRUCTOR.exe ` will be generated in ` PATH/TO/PROJECT/3D-CONSTRUCTOR/build/Debug/ `
