@@ -49,5 +49,5 @@ git clone https://github.com/Leetsong/3D-CONSTRUCTOR.git
 
 ## Problems
 
-1. (left) viewer window rendered by openGL is not that fine viewed as I think.
-2. (right) viewer window rendered by pcl runs slowly, it depends strongly on size of your point cloud.
+1. (left) viewer window rendered by openGL is not as fine viewed as what I think.
+2. (right) viewer window rendered by pcl runs slowly, it depends strongly on the size of your point cloud.
