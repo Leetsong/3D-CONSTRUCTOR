@@ -51,3 +51,4 @@ git clone https://github.com/Leetsong/3D-CONSTRUCTOR.git
 
 1. (left) viewer window rendered by openGL is not as fine viewed as what I think.
 2. (right) viewer window rendered by pcl runs slowly, it depends strongly on the size of your point cloud.
+3. Mouse and keyboard events triggered by (left) viewer window have not been implemented by now.
